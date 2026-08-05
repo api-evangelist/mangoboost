@@ -1,0 +1,118 @@
+generated: '2026-08-04'
+method: searched
+source: https://pypi.org/project/llmboost-hub/
+name: MangoBoost packages and client libraries
+description: >-
+  First-party MangoBoost distribution artifacts. MangoBoost publishes one public
+  package-registry artifact (the llmboost_hub Python CLI on PyPI) and one public Helm
+  chart repository (llmboost, for Kubernetes deployment). Everything else — the LLMBoost
+  container image and the Mango SDK .deb/.rpm packages — is distributed through a
+  MangoBoost-provisioned container registry or by contacting the company directly, so
+  those are recorded as gated rather than public.
+
+packages:
+  - language: python
+    registry: pypi
+    name: llmboost-hub
+    import_name: llmboost_hub
+    binary: lbh
+    url: https://pypi.org/project/llmboost-hub/
+    latest_version: 1.0.1
+    latest_release: '2026-06-11'
+    first_release: '2026-01-06'
+    release_count: 11
+    requires_python: '>=3.11'
+    official: true
+    official_evidence: >-
+      PyPI author_email is harish.kambhampaty@mangoboost.io and project_urls point at
+      https://llmboost.mangoboost.io/ — the vendor's own documentation host.
+    summary: >-
+      A lightweight CLI tool for managing LLMBoost model images and environments
+      (install, prep, run, serve, test, stop, status).
+    install:
+      - pip install llmboost_hub
+      - uv tool install llmboost_hub
+      - uvx --from llmboost_hub lbh --version
+    docs: https://llmboost.mangoboost.io/docs/running/lbh
+    x-evidence:
+      fetched: '2026-08-04'
+      url: https://pypi.org/pypi/llmboost_hub/json
+      http_status: 200
+
+  - language: helm
+    registry: helm
+    name: llmboost
+    url: https://mangoboost.github.io/llmboost-helm/
+    source: https://github.com/MangoBoost/llmboost-helm
+    latest_version: 1.2.1
+    app_version: 2.0.0
+    official: true
+    official_evidence: Published from the MangoBoost GitHub organization (MangoBoost/llmboost-helm).
+    summary: LLMBoost Helm chart for multinode Kubernetes deployment.
+    dependencies:
+      - amd-gpu (rocm/k8s-device-plugin)
+      - nvidia-device-plugin
+      - ingress-nginx
+      - kube-prometheus-stack
+      - dcgm-exporter
+      - device-metrics-exporter-charts
+    x-evidence:
+      fetched: '2026-08-04'
+      url: https://raw.githubusercontent.com/MangoBoost/llmboost-helm/main/docs/index.yaml
+      http_status: 200
+
+  - language: c
+    registry: vendor-apt-dnf
+    name: libmango-dev
+    also:
+      - mango-sdk
+      - mango-cli
+      - libmango-devel
+      - mango-drivers
+      - mango-drivers-spdk
+      - libmango-example
+    official: true
+    public: false
+    access: >-
+      Not published to a public repository. "To obtain the Mango SDK package files,
+      please contact us at contact@mangoboost.io." Distributed as .deb (Ubuntu 20.04 /
+      22.04 / 24.04) and .rpm (RHEL 9 / 10) for x86_64 hosts and AArch64 DPU SoCs.
+    header: libmango.h
+    build: pkg-config libmango --cflags --libs
+    docs: https://sdk.mangoboost.io/docs/api/
+    x-evidence:
+      fetched: '2026-08-04'
+      url: https://sdk.mangoboost.io/docs/guide/
+      http_status: 200
+
+  - language: container
+    registry: vendor-registry
+    name: llmboost server image
+    official: true
+    public: false
+    access: >-
+      Container registry access is provisioned per customer — "email contact@mangoboost.io
+      to sign up — include your Docker Hub username — and we'll invite that account to the
+      LLMBoost image registry." `lbh prep <model>` resolves and pulls the correct image
+      for the model + GPU pair.
+    docs: https://llmboost.mangoboost.io/docs/running/manual
+    x-evidence:
+      fetched: '2026-08-04'
+      url: https://llmboost.mangoboost.io/docs/running/lbh
+      http_status: 200
+
+not_found:
+  - registry: npm
+    note: No first-party MangoBoost/LLMBoost JavaScript client published. The docs
+      direct JS/TS users to the stock `openai` npm package pointed at the LLMBoost base URL.
+  - registry: pypi
+    name: llmboost
+    note: 404 — the server-side `llmboost` CLI ships inside the container image, not on PyPI.
+  - registry: maven-central
+  - registry: nuget
+  - registry: rubygems
+  - registry: crates.io
+  - registry: packagist
+  - registry: pkg.go.dev
+    note: The OPI bridge (github.com/opiproject/opi-mangoboost-bridge) is a Go binary
+      published under the Linux Foundation OPI project, not a MangoBoost-published module.

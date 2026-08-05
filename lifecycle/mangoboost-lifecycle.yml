@@ -1,0 +1,93 @@
+generated: '2026-08-04'
+method: searched
+source: https://sdk.mangoboost.io/docs/api/
+name: MangoBoost API lifecycle and versioning
+description: >-
+  MangoBoost versions its surfaces through artifacts rather than through a published
+  policy. The SDK documentation site carries explicit version channels; the LLMBoost server
+  is versioned by container image, Helm chart and PyPI release. There is no published
+  versioning policy, no deprecation policy, no Sunset/Deprecation header practice, no SLA
+  and no status page — which is consistent with a self-hosted product where the customer,
+  not MangoBoost, operates the endpoint. StatusPage and Deprecation pointers are therefore
+  NOT wired into apis.yml.
+
+versioning:
+  policy_published: false
+  surfaces:
+    - name: Mango SDK documentation
+      scheme: semver channels published side by side
+      channels: [latest, 1.1.0, 1.0.0]
+      url: https://sdk.mangoboost.io/docs/api/
+      note: >-
+        Each channel has its own full API reference and user guide. 1.1.0 adds the
+        Mango BoostX RoCE AI guide set (hw_setup, sw_setup, gpu, container, advanced) and
+        drops the 1.0.0 category pages for GPUBoost RNIC and the TOE / NVMe-oF categories.
+    - name: libmango
+      scheme: semver, reported at runtime
+      current: 0.5.3
+      note: 'Vendor example program prints "libmango version 0.5.3" via mango_get_version().'
+      url: https://sdk.mangoboost.io/docs/api/
+    - name: mango-smi
+      scheme: semver
+      current: 0.5.8
+      note: 'Vendor sample output header: "MANGO-SMI 0.5.8  Kernel Driver 1.0.0-250707".'
+      url: https://sdk.mangoboost.io/docs/guide/cli
+    - name: LLMBoost Hub (lbh)
+      scheme: semver on PyPI
+      current: 1.0.1
+      released: '2026-06-11'
+      first_release: '2026-01-06'
+      release_count: 11
+      url: https://pypi.org/project/llmboost-hub/
+    - name: LLMBoost Helm chart
+      scheme: semver
+      current: 1.2.1
+      app_version: 2.0.0
+      url: https://github.com/MangoBoost/llmboost-helm
+    - name: Mango LLMBoost HTTP API
+      scheme: path version
+      current: /v1
+      note: Inherits the OpenAI /v1 path convention.
+      url: https://llmboost.mangoboost.io/docs/features/openai-api
+
+deprecation:
+  policy_published: false
+  sunset_header: not documented
+  deprecation_header: not documented
+  observed_end_of_life_practice: >-
+    The troubleshooting page states that license activation can be denied because "your
+    image may be past end-of-life — pull the latest". End-of-life is therefore enforced on
+    the container image, but no schedule, notice period or policy page is published.
+    Documentation for superseded SDK versions (1.0.0) remains online alongside latest.
+  url: https://llmboost.mangoboost.io/docs/troubleshooting
+
+status_page:
+  present: false
+  probed:
+    - url: https://status.mangoboost.io/
+      status: dns-nxdomain
+  note: >-
+    No status page exists, and none would be meaningful — LLMBoost and the DPU both run
+    inside the customer's own infrastructure, so availability is the customer's to observe
+    (GET /health, GET /metrics, mango-smi).
+
+sla:
+  published: false
+
+support:
+  channel: email
+  contact: contact@mangoboost.io
+  url: https://www.mangoboost.io/contact
+
+x-evidence:
+  fetched: '2026-08-04'
+  probes:
+    - url: https://sdk.mangoboost.io/docs/api/
+      http_status: 200
+    - url: https://pypi.org/pypi/llmboost_hub/json
+      http_status: 200
+    - url: https://raw.githubusercontent.com/MangoBoost/llmboost-helm/main/docs/index.yaml
+      http_status: 200
+    - url: https://status.mangoboost.io/
+      http_status: 0
+      note: DNS did not resolve

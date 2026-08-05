@@ -1,0 +1,89 @@
+# MangoBoost
+
+> MangoBoost, Inc. builds full-stack Data Processing Unit (DPU) hardware and AI-infrastructure
+> software for data centers. Founded in 2022, headquartered in Seattle with operations in
+> Canada and Korea. Its developer surface is self-hosted, not SaaS: there is no MangoBoost-hosted
+> API endpoint, no API key issuance and no OAuth. You run the software on your own hardware.
+
+<!--
+generated: 2026-08-04
+method: generated
+source: apis.yml + repo artifacts (MangoBoost publishes no /llms.txt; probed
+        https://www.mangoboost.io/llms.txt 404, https://sdk.mangoboost.io/llms.txt 404,
+        https://llmboost.mangoboost.io/llms.txt 404)
+note:   Authored by API Evangelist as an independent third-party profile. This is NOT a
+        MangoBoost-published document.
+-->
+
+## What MangoBoost ships
+
+- Mango BoostX DPU family — RoCE AI (RDMA), NVMe-oF Initiator (NTI), NVMe-oF Target (NTT),
+  TCP Offload Engine (TOE)
+- Mango SDK — C/C++ device library (libmango), CLI tools (mango-ctl, mango-smi), OPI gRPC
+  storage bridge
+- Mango LLMBoost — enterprise LLM inference server with a drop-in OpenAI-compatible REST API,
+  running on customer-owned AMD Instinct GPUs
+
+## API surfaces
+
+- [Mango LLMBoost Inference Server API](https://llmboost.mangoboost.io/docs/features/openai-api):
+  OpenAI REST API on /v1, default http://localhost:8000/v1. Endpoints: POST /v1/chat/completions,
+  POST /v1/completions, POST /v1/embeddings, POST /v1/responses, POST /v1/audio/transcriptions,
+  POST /v1/audio/translations, GET /v1/models, GET /health, GET /metrics (Prometheus).
+  Streaming, JSON-schema structured output, tool calling and multimodal input are supported.
+  Self-hosted — no MangoBoost-operated endpoint exists.
+- [Mango SDK Device API (libmango)](https://sdk.mangoboost.io/docs/api/): C/C++ API groups —
+  Common, Device Context, Memory, DMA Transfer, TCP/IP Offload, TLS Offload, POSIX,
+  AI Image Preprocess, GPU StorageBoost (GSB), RDMA PCC, Software-Defined Device.
+- [Mango OPI Storage Bridge gRPC API](https://sdk.mangoboost.io/docs/guide/docs_opi/overview):
+  Open Programmable Infrastructure gRPC on :50051 (HTTP gateway :8082). Documented calls —
+  CreateNvmeSubsystem, CreateNvmeController, CreateNvmeRemoteController, CreateNvmePath,
+  CreateNvmeNamespace. Source: https://github.com/opiproject/opi-mangoboost-bridge
+
+## Docs
+
+- [LLMBoost documentation](https://llmboost.mangoboost.io/docs/)
+- [LLMBoost quickstart](https://llmboost.mangoboost.io/docs/quickstart)
+- [LLMBoost Hub (lbh) command reference](https://llmboost.mangoboost.io/docs/running/lbh)
+- [LLMBoost configuration reference](https://llmboost.mangoboost.io/docs/running/configuration)
+- [LLMBoost troubleshooting](https://llmboost.mangoboost.io/docs/troubleshooting)
+- [Mango SDK user guide](https://sdk.mangoboost.io/docs/guide/)
+- [Mango SDK library API reference](https://sdk.mangoboost.io/docs/api/)
+- [Mango SDK CLI usage](https://sdk.mangoboost.io/docs/guide/cli)
+
+## Getting access
+
+- LLMBoost Hub CLI: `pip install llmboost_hub` — https://pypi.org/project/llmboost-hub/
+- LLMBoost Helm chart: https://mangoboost.github.io/llmboost-helm/
+- LLMBoost container image: registry access provisioned by MangoBoost — email
+  contact@mangoboost.io with your Docker Hub username
+- Mango SDK packages (.deb/.rpm): contact contact@mangoboost.io
+- A free LLMBoost trial license is provisioned automatically on first serve
+
+## Authentication
+
+There is none by default. LLMBoost local serving takes no Authorization header
+(`api_key="not-needed"`); put it behind your own gateway before exposing it. HF_TOKEN is for
+downloading model weights, not for calling the API. The DPU surfaces are host-local or
+management-network scoped.
+
+## Company
+
+- [Website](https://www.mangoboost.io/)
+- [Solutions](https://www.mangoboost.io/solutions)
+- [Blog](https://www.mangoboost.io/resources/blog)
+- [News](https://www.mangoboost.io/media/news)
+- [Publications](https://www.mangoboost.io/resources/publications)
+- [Careers](https://www.mangoboost.io/careers)
+- [Contact](https://www.mangoboost.io/contact) — contact@mangoboost.io
+- [GitHub](https://github.com/MangoBoost)
+- [Terms of Service](https://www.mangoboost.io/terms-of-service)
+- [Privacy Policy](https://www.mangoboost.io/privacy-policy)
+
+## Not published
+
+MangoBoost publishes no OpenAPI or AsyncAPI document, no /llms.txt, no /.well-known/security.txt,
+no OpenID/OAuth metadata, no A2A agent card, no MCP server, no Postman collection, no status page,
+no public pricing, no deprecation policy, and no security or compliance certification (SOC 2,
+ISO 27001, PCI, HIPAA, FedRAMP). Every one of those paths was probed on 2026-08-04 and returned
+404 or did not resolve.

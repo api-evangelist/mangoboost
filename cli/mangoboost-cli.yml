@@ -1,0 +1,162 @@
+generated: '2026-08-04'
+method: searched
+source: https://llmboost.mangoboost.io/docs/running/lbh
+name: MangoBoost command-line interfaces
+description: >-
+  MangoBoost ships three first-party CLIs across two product lines: `lbh` (LLMBoost Hub)
+  and `llmboost` for the LLM inference server, and `mango-ctl` / `mango-smi` for DPU
+  device control and monitoring. Command surfaces below are transcribed from the vendor
+  documentation; no command was invented.
+
+clis:
+  - name: lbh
+    title: LLMBoost Hub
+    package: llmboost-hub (PyPI)
+    docs: https://llmboost.mangoboost.io/docs/running/lbh
+    summary: >-
+      One CLI that manages LLMBoost container images, model assets, the license and the
+      server — on a single node or a Kubernetes cluster.
+    install:
+      - pip install llmboost_hub
+      - uv tool install llmboost_hub
+      - pip install --upgrade llmboost_hub
+    help:
+      - lbh -h
+      - lbh <command> -h
+      - lbh -v <command>
+    commands:
+      - command: lbh login
+        does: Import and validate the license file (prompts for the EULA if needed).
+      - command: lbh fetch [model]
+        does: Refresh the supported-model lookup cache, filtered to your GPU.
+      - command: lbh list [query] [--discover PATH]
+        does: List prepared models; --discover scans a directory for existing model folders.
+      - command: lbh prep <model> [--only-verify] [--fresh]
+        does: Pull the image and download model assets; caches the resolved path.
+      - command: lbh run <model> [opts] -- [docker flags]
+        does: Start a detached container (mounts workspace, maps GPUs). Flags after `--` go to `docker run`.
+      - command: lbh serve <model> [opts] -- [llmboost args]
+        does: Start the inference server inside the container. Flags after `--` go to `llmboost serve`.
+        options: ['--host', '--port', '--detached', '--force']
+      - command: lbh test <model> [--query "…"] [-t N]
+        does: Send a request to /v1/chat/completions as a smoke test.
+      - command: lbh attach <model>
+        does: Open an interactive shell in the running container.
+      - command: lbh stop <model>
+        does: Stop the running container.
+      - command: lbh status [model]
+        does: Concise status for prepared models.
+      - command: lbh completions
+        does: Print or install shell completions.
+    environment:
+      - name: LBH_HOME
+        default: ~/.llmboost_hub
+        purpose: Root data dir (config, cache, models, license).
+      - name: LBH_MODELS
+        default: $LBH_HOME/models
+        purpose: Downloaded model assets.
+      - name: LBH_MODEL_PATHS
+        default: $LBH_HOME/model_paths.yaml
+        purpose: Saved model-name to host-path map.
+      - name: LBH_LICENSE_PATH
+        default: $LBH_HOME/license.skm
+        purpose: License file.
+      - name: LBH_AUTO_PREP
+        default: 'True'
+        purpose: Auto-run prep when run/serve need missing assets.
+      - name: HF_TOKEN
+        default: unset
+        purpose: Hugging Face token, forwarded into containers.
+    config_resolution: environment variable -> $LBH_HOME/config.yaml -> built-in default
+
+  - name: llmboost
+    title: LLMBoost inference server CLI
+    docs: https://llmboost.mangoboost.io/docs/running/configuration
+    summary: >-
+      The server CLI inside the LLMBoost container. `llmboost serve` exposes a
+      vLLM-compatible serve interface — same flag names and semantics — so existing vLLM
+      launch scripts run against it unchanged.
+    help:
+      - llmboost --help
+      - llmboost <command> --help
+      - llmboost serve --help   # authoritative, version-correct flag set
+    commands:
+      - command: llmboost serve <Repo/Model-Name> [flags]
+        does: Start the OpenAI-compatible HTTP server.
+    flags:
+      - flag: --port N
+        default: '8000'
+        does: Port for the HTTP server.
+      - flag: --tensor-parallel-size N
+        default: auto
+        does: Shard the model across N GPUs.
+      - flag: --max-model-len N
+        default: model max
+        does: Cap context length (prompt + output).
+      - flag: --gpu-memory-utilization 0-1
+        default: tuned
+        does: Fraction of VRAM for weights + KV cache.
+      - flag: --max-num-seqs N
+        default: tuned
+        does: Max concurrent sequences per batch.
+      - flag: --enforce-eager
+        default: 'off'
+        does: Skip graph capture (faster start, lower peak throughput).
+      - flag: --scheduling-policy fcfs
+        default: fcfs
+        does: Request ordering policy.
+      - flag: --disable-llmboost-opts
+        default: 'off'
+        does: Run without LLMBoost's licensed optimizations (diagnostics).
+      - flag: --disable-auto-config
+        does: Disable automatic configuration when user args conflict with it.
+      - flag: --chat-template ./chat_template.jinja
+        does: Supply a Jinja2 chat template for base/custom models.
+
+  - name: mango-ctl
+    title: MangoBoost DPU device control
+    package: mango-cli
+    docs: https://sdk.mangoboost.io/docs/guide/cli
+    summary: Configure MangoBoost DPU devices. Supports bash tab-completion.
+    commands:
+      - command: mango-ctl dev list
+        does: List the available MangoBoost PCIe devices by BDF.
+      - command: mango-ctl dev show [nvme]
+        does: Show device details (vendor/device ID, BARs, NUMA node, PCIe link, kernel module).
+      - command: mango-ctl dev rescan
+        does: Rescan the PCIe devices.
+      - command: mango-ctl dev remove
+        does: Remove the PCIe device.
+      - command: mango-ctl dev enable
+        does: Enable the MangoBoost project.
+      - command: mango-ctl dev disable
+        does: Disable the MangoBoost project.
+      - command: mango-ctl dev sriov
+        does: Enable SR-IOV for the PCIe device.
+      - command: mango-ctl dev reset
+        does: Perform a PCIe hot reset on the device.
+      - command: mango-ctl ntt start
+        does: Start the NVMe-oF Target (NTT) service.
+      - command: mango-ctl nvme start
+        does: Start the NVMe-oF Initiator (NTI) service on the DPU SoC.
+
+  - name: mango-smi
+    title: MangoBoost DPU monitoring
+    package: mango-cli
+    docs: https://sdk.mangoboost.io/docs/guide/cli
+    summary: >-
+      Monitor MangoBoost DPU devices — card information plus sensor monitoring including
+      total power, FPGA temperature and SoC status.
+    commands:
+      - command: mango-smi
+        does: Print the device table (BDF, vendor:device ID, serial, description, power, temperature, SoC status).
+
+x-evidence:
+  fetched: '2026-08-04'
+  probes:
+    - url: https://llmboost.mangoboost.io/docs/running/lbh
+      http_status: 200
+    - url: https://llmboost.mangoboost.io/docs/running/configuration
+      http_status: 200
+    - url: https://sdk.mangoboost.io/docs/guide/cli
+      http_status: 200

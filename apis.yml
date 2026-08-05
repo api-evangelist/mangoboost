@@ -1,23 +1,190 @@
 aid: mangoboost
 name: MangoBoost
-description: 'MangoBoost is a company surfaced via the API Evangelist harvest backlog (source: secondary-market)
-  and added to the network as a stub for full-pipeline profiling.'
+description: 'MangoBoost, Inc. builds full-stack Data Processing Unit (DPU) hardware
+  and AI-infrastructure software for data centers. Founded in 2022 and headquartered
+  in Seattle with operations in Canada and Korea, the company ships the Mango BoostX
+  DPU family (RoCE AI / RDMA, NVMe-oF initiator and target, TCP Offload Engine), the
+  Mango SDK — a C/C++ device library (libmango), CLI tools (mango-ctl, mango-smi) and
+  an OPI-compliant gRPC storage bridge — and Mango LLMBoost, an enterprise LLM inference
+  server that exposes a drop-in OpenAI-compatible REST API on customer-owned AMD Instinct
+  GPUs. Its developer surface is self-hosted rather than SaaS: the LLMBoost server is
+  distributed as a container plus the llmboost_hub (lbh) Python CLI, and the DPU is
+  programmed through libmango and OPI gRPC on the card.'
 url: https://raw.githubusercontent.com/api-evangelist/mangoboost/refs/heads/main/apis.yml
+image: https://cdn.sanity.io/images/hx87iaks/production/044e3e87d4c32dc3c01996e772f4b3f7c08b873e-376x61.png
 x-type: company
 x-source: harvest:secondary-market
-x-tier: stub
-x-tier-reason: harvest
+x-harvest-url: https://forgeglobal.com/mangoboost_stock/
+x-tier: profiled
+x-tier-reason: enrichment
 specificationVersion: '0.20'
 created: '2026-08-04'
 modified: '2026-08-04'
 tags:
 - Company
-apis: []
+- Artificial Intelligence
+- Machine Learning
+- Infrastructure
+- Data Center
+- Semiconductors
+- Hardware
+- Storage
+- Networking
+- Inference
+- GPU
+- DPU
+apis:
+- aid: mangoboost:llmboost-inference
+  name: Mango LLMBoost Inference Server API
+  description: 'LLMBoost is MangoBoost''s enterprise LLM inference server. It serves the
+    OpenAI REST API on /v1 so an existing OpenAI client migrates with a base-URL change:
+    POST /v1/chat/completions, POST /v1/completions, POST /v1/embeddings, POST /v1/responses,
+    POST /v1/audio/transcriptions and /translations, GET /v1/models, plus GET /health
+    and GET /metrics (Prometheus). Streaming, JSON-schema structured output, tool/function
+    calling and multimodal image input are supported. The server is self-hosted on the
+    customer''s own AMD Instinct GPUs — there is no MangoBoost-hosted endpoint — and is
+    started with `lbh serve <Repo/Model>` or `llmboost serve <model>` inside the LLMBoost
+    container.'
+  humanURL: https://llmboost.mangoboost.io/docs/features/openai-api
+  baseURL: http://localhost:8000/v1
+  x-deployment: self-hosted
+  x-default-port: 8000
+  tags:
+  - Inference
+  - Artificial Intelligence
+  - LLM
+  - OpenAI Compatible
+  - Self Hosted
+  properties:
+  - type: Documentation
+    url: https://llmboost.mangoboost.io/docs/
+  - type: GettingStarted
+    url: https://llmboost.mangoboost.io/docs/quickstart
+  - type: APIReference
+    url: https://llmboost.mangoboost.io/docs/features/openai-api
+- aid: mangoboost:mango-sdk
+  name: Mango SDK Device API (libmango)
+  description: 'The Mango SDK development package (libmango-dev) provides the C/C++ user
+    API, libraries and example applications for programming MangoBoost DPU devices.
+    Documented API groups are Common, Device Context, Memory, DMA Transfer, TCP/IP Offload,
+    TLS Offload, POSIX (compatibility shims), AI Image Preprocess, GPU StorageBoost (GSB),
+    RDMA PCC and Software-Defined Device. Applications include libmango.h and link with
+    pkg-config; packages are distributed as .deb/.rpm (mango-sdk, mango-cli, libmango-dev,
+    mango-drivers, mango-drivers-spdk) obtained by contacting MangoBoost.'
+  humanURL: https://sdk.mangoboost.io/docs/api/
+  x-deployment: on-device-library
+  tags:
+  - SDK
+  - DPU
+  - Storage
+  - Networking
+  - RDMA
+  properties:
+  - type: Documentation
+    url: https://sdk.mangoboost.io/docs/guide/
+  - type: APIReference
+    url: https://sdk.mangoboost.io/docs/api/
+- aid: mangoboost:opi-storage-bridge
+  name: Mango OPI Storage Bridge gRPC API
+  description: 'MangoBoost ships an Open Programmable Infrastructure (OPI) gRPC bridge
+    that translates standard OPI storage API calls into MangoBoost SDK / SPDK RPC calls
+    on the DPU, so NVMe-oF initiator (NTI) and target (NTT) offloads can be configured
+    with the vendor-neutral OPI interface. The bridge listens on gRPC port 50051 with an
+    HTTP gateway on 8082; documented calls include CreateNvmeSubsystem, CreateNvmeController,
+    CreateNvmeRemoteController, CreateNvmePath and CreateNvmeNamespace. The implementation
+    is open source under the Linux Foundation OPI project as opi-mangoboost-bridge.'
+  humanURL: https://sdk.mangoboost.io/docs/guide/docs_opi/overview
+  x-deployment: on-device-grpc
+  x-default-port: 50051
+  tags:
+  - gRPC
+  - Storage
+  - NVMe-oF
+  - OPI
+  - DPU
+  properties:
+  - type: Documentation
+    url: https://sdk.mangoboost.io/docs/guide/docs_opi/guide
+  - type: SourceCode
+    url: https://github.com/opiproject/opi-mangoboost-bridge
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: DomainSecurity
+  url: security/mangoboost-domain-security.yml
+- type: Packages
+  url: packages/mangoboost-packages.yml
+- type: SDKs
+  url: packages/mangoboost-packages.yml
+- type: CLI
+  url: cli/mangoboost-cli.yml
+- type: Authentication
+  url: authentication/mangoboost-authentication.yml
+- type: Conventions
+  url: conventions/mangoboost-conventions.yml
+- type: ErrorCatalog
+  url: errors/mangoboost-error-codes.yml
+- type: Lifecycle
+  url: lifecycle/mangoboost-lifecycle.yml
+- type: Conformance
+  url: conformance/mangoboost-conformance.yml
+- type: LLMsTxt
+  url: llms/mangoboost-llms.txt
 - type: Website
-  url: https://forgeglobal.com/mangoboost_stock/
+  url: https://www.mangoboost.io/
+- type: DeveloperPortal
+  url: https://sdk.mangoboost.io/
+- type: Documentation
+  url: https://llmboost.mangoboost.io/docs/
+- type: APIReference
+  url: https://sdk.mangoboost.io/docs/api/
+- type: GettingStarted
+  url: https://llmboost.mangoboost.io/docs/quickstart
+- type: Support
+  url: https://www.mangoboost.io/contact
+- type: Blog
+  url: https://www.mangoboost.io/resources/blog
+- type: GitHubOrganization
+  url: https://github.com/MangoBoost
+- type: TermsOfService
+  url: https://www.mangoboost.io/terms-of-service
+- type: PrivacyPolicy
+  url: https://www.mangoboost.io/privacy-policy
+- type: Careers
+  url: https://www.mangoboost.io/careers
+- type: News
+  url: https://www.mangoboost.io/media/news
+- type: Publications
+  url: https://www.mangoboost.io/resources/publications
+- type: LinkedIn
+  url: https://www.linkedin.com/company/mangoboost/
+- type: Twitter
+  url: https://x.com/mangoboost_inc
+x-enrichment:
+  date: '2026-08-04'
+  status: enriched
+  artifacts_added: 10
+  pass: local-v1
+x-coverage:
+  state: covered
+  reason: no-machine-readable-spec
+  detail: >-
+    Fully profiled from three live, server-rendered documentation hosts, but MangoBoost
+    publishes no machine-readable contract for any of its three API surfaces — /openapi.json,
+    /openapi.yaml, /swagger.json, /api-docs and /redoc all return 404 on www., sdk. and
+    llmboost.mangoboost.io, and the OPI gRPC bridge ships no first-party .proto. The
+    LLMBoost server is OpenAI-compatible, so an OpenAPI describing its /v1 surface would be
+    cheap for them to publish.
+  evidence:
+    - url: https://llmboost.mangoboost.io/docs/features/openai-api
+      status: 200
+    - url: https://sdk.mangoboost.io/docs/api/
+      status: 200
+    - url: https://llmboost.mangoboost.io/openapi.json
+      status: 404
+    - url: https://www.mangoboost.io/llms.txt
+      status: 404
+  checked: '2026-08-04'

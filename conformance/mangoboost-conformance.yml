@@ -1,0 +1,166 @@
+generated: '2026-08-04'
+method: searched
+source: https://llmboost.mangoboost.io/docs/features/openai-api
+name: MangoBoost standards conformance
+description: >-
+  Cross-cutting and industry standards MangoBoost's public surfaces claim or demonstrably
+  implement. Every `conforms: true` row carries a URL that documents the claim. No
+  security or privacy certification (SOC 2, ISO 27001, PCI, HIPAA, FedRAMP) is published
+  anywhere on the MangoBoost surface, so no Compliance pointer is wired into apis.yml.
+
+standards:
+  - id: openai-api
+    name: OpenAI REST API compatibility
+    conforms: true
+    scope: Mango LLMBoost Inference Server
+    evidence: >-
+      "LLMBoost serves the OpenAI REST API on /v1. If your app already talks to OpenAI,
+      migration is a one-line base-URL change — no SDK swap, no rewrite." Documented
+      endpoints: /v1/chat/completions, /v1/completions, /v1/embeddings, /v1/responses,
+      /v1/audio/transcriptions, /v1/audio/translations, /v1/models.
+    url: https://llmboost.mangoboost.io/docs/features/openai-api
+
+  - id: openai-streaming-sse
+    name: OpenAI streaming (server-sent chunk deltas)
+    conforms: true
+    scope: Mango LLMBoost Inference Server
+    evidence: '`"stream": true` returns chunked deltas via the standard OpenAI client iterator.'
+    url: https://llmboost.mangoboost.io/docs/features/streaming-structured-tools
+
+  - id: json-schema-structured-output
+    name: JSON Schema constrained decoding (response_format json_schema / json_object)
+    conforms: true
+    scope: Mango LLMBoost Inference Server
+    evidence: >-
+      "Force valid JSON — guided decoding constrains the model to your schema."
+      Both {"type":"json_schema"} and {"type":"json_object"} are supported.
+    url: https://llmboost.mangoboost.io/docs/features/streaming-structured-tools
+
+  - id: openai-tool-calling
+    name: OpenAI tool / function calling
+    conforms: partial
+    scope: Mango LLMBoost Inference Server
+    evidence: >-
+      Tool schemas are forwarded and tool_choice is honored, but emission "needs a
+      tool-trained instruct model and the matching tool-call parser enabled on the server."
+    url: https://llmboost.mangoboost.io/docs/features/streaming-structured-tools
+
+  - id: vllm-cli
+    name: vLLM-compatible serve interface
+    conforms: true
+    scope: llmboost serve
+    evidence: >-
+      "llmboost serve exposes a vLLM-compatible serve interface — the same flag names and
+      semantics — so your existing launch scripts, configs, and tooling run against it
+      unchanged."
+    url: https://llmboost.mangoboost.io/docs/running/configuration
+
+  - id: prometheus-metrics
+    name: Prometheus metrics exposition
+    conforms: true
+    scope: Mango LLMBoost Inference Server
+    evidence: 'GET /metrics is documented as "Prometheus metrics"; the Helm chart bundles kube-prometheus-stack.'
+    url: https://llmboost.mangoboost.io/docs/features/openai-api
+
+  - id: opi
+    name: Open Programmable Infrastructure (OPI) storage API
+    conforms: true
+    scope: Mango OPI Storage Bridge
+    evidence: >-
+      "MangoBoost provides a gRPC bridge that enables users to interact with the Mango SDK
+      via the OPI gRPC interface." Implements the OPI NVMe frontend/backend calls —
+      CreateNvmeSubsystem, CreateNvmeController, CreateNvmeRemoteController, CreateNvmePath,
+      CreateNvmeNamespace — and is hosted in the Linux Foundation OPI project itself.
+    url: https://github.com/opiproject/opi-mangoboost-bridge
+
+  - id: grpc
+    name: gRPC
+    conforms: true
+    scope: Mango OPI Storage Bridge
+    evidence: 'Bridge log: "gRPC server listening at [::]:50051", "HTTP Server listening at 8082"; called with grpc_cli.'
+    url: https://sdk.mangoboost.io/docs/guide/docs_opi/guide
+
+  - id: nvme-of
+    name: NVMe over Fabrics (NVMe/TCP initiator and target)
+    conforms: true
+    scope: Mango BoostX NTI / NTT
+    evidence: >-
+      NVMe-oF subsystems, controllers, namespaces and paths configured with NVMe/TCP
+      transport (trsvcid 4420, NQN nqn.2019-07.io.spdk:cnode0 in the vendor example).
+    url: https://sdk.mangoboost.io/docs/guide/docs_storageboost_ntt/overview
+
+  - id: spdk
+    name: SPDK (Storage Performance Development Kit) RPC
+    conforms: true
+    scope: Mango DPU storage stack
+    evidence: >-
+      "the OPI bridge translates it into the corresponding MangoBoost SPDK RPC calls";
+      mango-drivers-spdk is a shipped package; bridge reports SPDK v25.05 firmware revision.
+    url: https://sdk.mangoboost.io/docs/guide/docs_opi/overview
+
+  - id: rocev2-rdma
+    name: RoCE v2 / RDMA
+    conforms: true
+    scope: Mango BoostX RoCE AI, Mango GPUBoost RDMA
+    evidence: 'Device description "Mango BoostX - RoCE AI"; RDMA PCC API group in the SDK library reference.'
+    url: https://sdk.mangoboost.io/docs/guide/docs_boostx_roce_ai/overview
+
+  - id: posix
+    name: POSIX API compatibility layer
+    conforms: true
+    scope: Mango SDK (libmango)
+    evidence: '"POSIX emulation APIs to provide compatibility with the standard POSIX APIs."'
+    url: https://sdk.mangoboost.io/docs/api/posix
+
+  - id: mlperf
+    name: MLPerf Inference / Training / Storage benchmark submissions
+    conforms: true
+    scope: Company-wide
+    evidence: >-
+      "Record MLPerf Inference v5.0, v5.1, and v6.0 results on AMD Instinct GPUs";
+      MLPerf Training v4.1 and MLPerf Storage v1.0 submissions are announced on the blog.
+    url: https://llmboost.mangoboost.io/docs/benchmarks
+
+  - id: rfc9457
+    name: RFC 9457 Problem Details for HTTP APIs
+    conforms: false
+    scope: Mango LLMBoost Inference Server
+    evidence: >-
+      No application/problem+json envelope is documented. LLMBoost inherits the OpenAI
+      error envelope ({"error": {...}}) rather than RFC 9457.
+
+  - id: oauth2
+    name: OAuth 2.0
+    conforms: false
+    scope: All surfaces
+    evidence: >-
+      No OAuth surface. LLMBoost local serving takes no Authorization header at all
+      ("Drop the Authorization header for local serving"); the DPU surfaces are
+      host-local (libmango, gRPC on the card).
+
+  - id: openapi
+    name: OpenAPI description
+    conforms: false
+    scope: All surfaces
+    evidence: >-
+      No OpenAPI/Swagger document is published at any MangoBoost host. Probed
+      /openapi.json, /openapi.yaml, /swagger.json, /api-docs and /redoc on
+      www., sdk. and llmboost.mangoboost.io — all 404.
+
+  - id: asyncapi
+    name: AsyncAPI / event surface
+    conforms: false
+    scope: All surfaces
+    evidence: 'No webhooks, event stream or message broker surface is documented. Not applicable to a self-hosted inference server and on-card DPU API.'
+
+certifications_published: []
+
+x-evidence:
+  fetched: '2026-08-04'
+  probes:
+    - url: https://llmboost.mangoboost.io/docs/features/openai-api
+      http_status: 200
+    - url: https://sdk.mangoboost.io/docs/guide/docs_opi/guide
+      http_status: 200
+    - url: https://www.mangoboost.io/openapi.json
+      http_status: 404

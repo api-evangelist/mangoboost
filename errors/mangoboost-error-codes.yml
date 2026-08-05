@@ -1,0 +1,108 @@
+generated: '2026-08-04'
+method: searched
+source: https://llmboost.mangoboost.io/docs/troubleshooting
+name: MangoBoost LLMBoost documented failure modes
+description: >-
+  MangoBoost publishes no error-code registry and no RFC 9457 problem-type catalog. What it
+  does publish is a troubleshooting reference for the LLMBoost inference server — the
+  failure conditions an operator actually hits, their cause, and the documented
+  remediation. That is captured verbatim-in-substance below. Codes are the vendor's own
+  strings where the docs quote one; where they do not, the `code` field is null rather than
+  invented, and the condition is keyed by its documented symptom.
+
+format: vendor-documented-conditions
+rfc9457: false
+error_envelope: 'OpenAI-style {"error": {...}} inherited from the OpenAI-compatible surface; not separately documented.'
+
+conditions:
+  - id: gpu-oom-startup
+    symptom: GPU out of memory at startup
+    code: null
+    cause: Model weights and KV-cache allocations do not fit in GPU memory.
+    remediation:
+      - llmboost serve <model> --max-model-len 8192
+      - llmboost serve <model> --gpu-memory-utilization 0.85
+      - llmboost serve <model> --tensor-parallel-size 2
+    note: Large models (e.g. deepseek-ai/DeepSeek-V3.2) need multiple GPUs.
+
+  - id: gpu-oom-runtime
+    symptom: Server aborts mid-run once traffic ramps up
+    code: HSA_STATUS_ERROR_OUT_OF_RESOURCES
+    code_detail: 'AMD ROCm runtime abort, "Code: 0x1008", "Available Free mem : 0 MB."'
+    cause: KV-cache growth under concurrent requests exhausts GPU memory.
+    remediation:
+      - Lower client-side concurrency (fewer in-flight requests).
+      - llmboost serve <model> --disable-auto-config --gpu-memory-utilization 0.9 --max_num_seqs 512
+
+  - id: model-not-found
+    symptom: '"Model not found" / download fails'
+    code: null
+    cause: Wrong Hugging Face model ID, a gated model, or no network path to huggingface.co.
+    remediation:
+      - Use the full Hugging Face model ID (e.g. deepseek-ai/DeepSeek-V3.2).
+      - Use a pre-downloaded local path via `lbh serve <Repo/Model> -m /path/to/model`.
+      - Accept the model license on Hugging Face, then `hf auth login` or export HF_TOKEN.
+      - Behind a proxy, ensure the host can reach huggingface.co.
+
+  - id: license-activation-failed
+    symptom: License activation fails
+    code: null
+    cause: >-
+      First activation needs outbound network; or the image is past end-of-life so the free
+      trial is denied.
+    remediation:
+      - Keep the host online for the first activation.
+      - Pull the latest image.
+      - Contact MangoBoost for an enterprise seat.
+
+  - id: port-in-use
+    symptom: Port already in use
+    code: null
+    cause: The default port 8000 is occupied.
+    remediation:
+      - llmboost serve <model> --port 8001
+
+  - id: requests-hang-or-5xx
+    symptom: Server is up but requests hang or return 5xx
+    code: 5xx
+    cause: The model is still loading — the first request after start can be slow (weights + warmup).
+    remediation:
+      - Poll GET /health until 200.
+      - Check the server console output for the underlying error.
+      - Reproduce with the built-in smoke test, `lbh test <model>`.
+
+  - id: no-chat-template
+    symptom: Chat requests fail with "no chat template"
+    code: null
+    cause: The model has no built-in chat template — usually a base model rather than an instruct one.
+    remediation:
+      - Use an instruct model (…-Instruct) for the chat endpoints.
+      - Use /v1/completions instead for base models.
+      - llmboost serve <model> --chat-template ./chat_template.jinja
+
+  - id: auto-config-conflict
+    symptom: LLMBoost fails to start when user args conflict with automatic configuration
+    code: null
+    cause: User-provided serve arguments conflict with LLMBoost's auto-tuning.
+    remediation:
+      - Remove the conflicting arguments.
+      - llmboost serve <model> --disable-auto-config
+      - 'lbh form: lbh serve ... -- --disable-auto-config'
+
+  - id: docker-no-gpu
+    symptom: Docker cannot see the GPU
+    code: null
+    cause: Container lacks GPU device access or the host runtime is missing.
+    remediation:
+      - 'AMD (ROCm): verify with rocm-smi; ensure ROCm 6.3+ and container access to /dev/kfd and /dev/dri.'
+      - 'NVIDIA (CUDA): verify with nvidia-smi; ensure the NVIDIA Container Toolkit is installed and --gpus all is set.'
+
+escalation:
+  detail: '"Still stuck? Grab the server''s console output and contact us."'
+  url: https://www.mangoboost.io/contact
+
+x-evidence:
+  fetched: '2026-08-04'
+  probes:
+    - url: https://llmboost.mangoboost.io/docs/troubleshooting
+      http_status: 200

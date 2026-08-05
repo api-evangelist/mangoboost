@@ -1,0 +1,161 @@
+generated: '2026-08-04'
+method: searched
+source: https://llmboost.mangoboost.io/docs/features/openai-api
+name: MangoBoost API conventions and runtime semantics
+description: >-
+  Cross-cutting semantics for the MangoBoost surfaces, transcribed from the vendor docs.
+  The LLMBoost inference API inherits OpenAI's conventions wholesale — that is the product
+  claim — so the conventions below are OpenAI's as implemented by LLMBoost, plus the
+  MangoBoost-specific deployment and configuration semantics. Idempotency is NOT part of
+  this surface: no idempotency key, no retry-safety contract, and no dedupe window is
+  documented, so no Idempotency pointer is wired into apis.yml.
+
+surface: Mango LLMBoost Inference Server API
+
+base_path: /v1
+default_endpoint: http://localhost:8000/v1
+default_port: 8000
+port_override: llmboost serve <model> --port 8001
+
+content_type: application/json
+
+endpoints:
+  - method: POST
+    path: /v1/chat/completions
+    purpose: Chat (messages in, assistant message out)
+  - method: POST
+    path: /v1/completions
+    purpose: Raw text completion
+  - method: POST
+    path: /v1/embeddings
+    purpose: Embeddings (embedding models)
+  - method: POST
+    path: /v1/responses
+    purpose: OpenAI Responses API
+  - method: POST
+    path: /v1/audio/transcriptions
+    purpose: Speech-to-text (audio models)
+  - method: POST
+    path: /v1/audio/translations
+    purpose: Speech translation (audio models)
+  - method: GET
+    path: /v1/models
+    purpose: List served models
+  - method: GET
+    path: /health
+    purpose: Liveness. "Poll GET /health until 200" after start — first request can be slow (weights + warmup).
+  - method: GET
+    path: /metrics
+    purpose: Prometheus metrics
+
+authentication:
+  style: none-by-default
+  detail: >-
+    "Drop the Authorization header for local serving, or put LLMBoost behind your own
+    gateway for auth." See authentication/mangoboost-authentication.yml.
+
+idempotency:
+  supported: false
+  detail: >-
+    No Idempotency-Key header, no request-deduplication window, and no retry-safety
+    statement appears in the LLMBoost documentation. Inference calls are non-idempotent by
+    nature (sampling), though `seed` is a supported pass-through parameter for
+    reproducibility.
+
+pagination:
+  supported: false
+  detail: 'The only collection endpoint is GET /v1/models, which returns the full served-model list unpaginated.'
+
+versioning:
+  api: 'Path-versioned at /v1 (the OpenAI convention).'
+  server: >-
+    Versioned by container image and Helm chart (llmboost chart 1.2.1, appVersion 2.0.0);
+    the lbh client is versioned on PyPI (llmboost-hub 1.0.1).
+  sdk: >-
+    The Mango SDK docs site carries explicit version channels — latest, 1.1.0 and 1.0.0 —
+    each with its own API reference and user guide.
+
+model_identifiers:
+  form: Hugging Face repository name, "Repo/Model-Name"
+  examples:
+    - deepseek-ai/DeepSeek-V3.2
+    - moonshotai/Kimi-K2.6
+  local_override: 'lbh serve <Repo/Model> -m /path/to/model'
+
+streaming:
+  supported: true
+  style: 'OpenAI chunked deltas — set "stream": true and iterate chunk.choices[0].delta.content.'
+
+structured_output:
+  supported: true
+  formats:
+    - '{"type": "json_schema", "json_schema": {"name": ..., "schema": {...}}}'
+    - '{"type": "json_object"}'
+  mechanism: guided decoding constrains the model to the supplied schema
+
+tool_calling:
+  supported: true
+  caveat: >-
+    Requires a tool-trained instruct model and the matching tool-call parser enabled on the
+    server. LLMBoost forwards the tool schema either way; the model decides whether to call.
+
+multimodal:
+  supported: true
+  detail: 'Image-to-text models are supported; send image content parts per the OpenAI multimodal message format.'
+
+sampling_parameters_passthrough:
+  - temperature
+  - top_p
+  - max_tokens
+  - n
+  - stop
+  - seed
+  - logprobs
+
+error_envelope:
+  shape: 'OpenAI-style {"error": {...}} — inherited, not separately documented by MangoBoost.'
+  rfc9457: false
+  see: errors/mangoboost-error-codes.yml
+
+rate_limit_signaling:
+  documented: false
+  detail: >-
+    No rate-limit headers or quota semantics are published. Concurrency is bounded by GPU
+    memory rather than by policy — the docs direct you to "lower the client-side
+    concurrency" and tune --max-num-seqs / --gpu-memory-utilization.
+
+request_tracing:
+  documented: false
+  detail: 'No request-id header is documented. Observability is via GET /metrics (Prometheus) and container console output.'
+
+chat_template:
+  detail: >-
+    Chat endpoints require the model to ship a chat template. Base models without one work
+    on /v1/completions, or supply a Jinja2 template with
+    `llmboost serve <model> --chat-template ./chat_template.jinja`.
+
+related_surfaces:
+  - name: Mango OPI Storage Bridge gRPC API
+    convention: >-
+      Resource-name conventions follow the OPI/AIP resource-path style —
+      "nvmeSubsystems/subsystem0", "nvmeRemoteControllers/nvme0/nvmePaths/nvmepciepath0" —
+      with create calls taking a parent plus an explicit <resource>_id. Fields are snake_case
+      on input and lowerCamelCase on JSON output (protobuf JSON mapping).
+    url: https://sdk.mangoboost.io/docs/guide/docs_opi/guide
+
+cross_links:
+  authentication: authentication/mangoboost-authentication.yml
+  errors: errors/mangoboost-error-codes.yml
+  lifecycle: lifecycle/mangoboost-lifecycle.yml
+  cli: cli/mangoboost-cli.yml
+  conformance: conformance/mangoboost-conformance.yml
+
+x-evidence:
+  fetched: '2026-08-04'
+  probes:
+    - url: https://llmboost.mangoboost.io/docs/features/openai-api
+      http_status: 200
+    - url: https://llmboost.mangoboost.io/docs/features/streaming-structured-tools
+      http_status: 200
+    - url: https://llmboost.mangoboost.io/docs/troubleshooting
+      http_status: 200

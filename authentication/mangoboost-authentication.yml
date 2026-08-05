@@ -1,0 +1,95 @@
+generated: '2026-08-04'
+method: searched
+source: https://llmboost.mangoboost.io/docs/features/openai-api
+docs: https://llmboost.mangoboost.io/docs/running/lbh
+name: MangoBoost authentication and access model
+description: >-
+  MangoBoost has no hosted, credentialed API. Every surface is deployed inside the
+  customer's own infrastructure, so authentication is a deployment concern rather than an
+  API concern. The three credentials that do exist are for pulling assets (Hugging Face,
+  container registry) and for activating the commercial license — not for calling the API.
+  There is no API-key issuance, no OAuth, no OIDC, and no token endpoint anywhere on the
+  MangoBoost surface.
+
+surfaces:
+  - api: Mango LLMBoost Inference Server API
+    transport: HTTP/1.1 REST on :8000 (default)
+    security_schemes: []
+    model: none-by-default
+    detail: >-
+      "Drop the Authorization header for local serving, or put LLMBoost behind your own
+      gateway for auth." Vendor examples set api_key="not-needed". The OpenAI client
+      requires an api_key value, so any non-empty string works; the server does not
+      validate it.
+    recommendation: >-
+      Because the server ships with no authentication, network placement IS the access
+      control. Bind it to a private interface and front it with your own gateway (mTLS,
+      API keys, OAuth) before any non-loopback exposure.
+    url: https://llmboost.mangoboost.io/docs/features/openai-api
+
+  - api: Mango SDK Device API (libmango)
+    transport: In-process C/C++ library against a local PCIe device
+    security_schemes: []
+    model: os-privilege
+    detail: >-
+      Access is governed by Linux privileges on the device — mango-ctl and mango-smi
+      examples require sudo, and the container needs /dev/kfd and /dev/dri access for the
+      GPU path. There is no network authentication layer.
+    url: https://sdk.mangoboost.io/docs/api/
+
+  - api: Mango OPI Storage Bridge gRPC API
+    transport: gRPC on :50051 (HTTP gateway on :8082)
+    security_schemes: []
+    model: network-scoped
+    detail: >-
+      The vendor guide calls the bridge over plaintext gRPC with grpc_cli against
+      127.0.0.1:50051 or the DPU SoC address (192.168.1.2:50051), and notes that "OPI API
+      calls can be made from any server with the same network as the DPU SoC." No TLS,
+      token or per-call credential is documented — the management network is the boundary.
+    url: https://sdk.mangoboost.io/docs/guide/docs_opi/guide
+
+credentials:
+  - name: HF_TOKEN
+    kind: bearer-token
+    purpose: Hugging Face token for downloading gated or private model weights. Forwarded into the container.
+    obtained: hf auth login, or export HF_TOKEN=...
+    scope_of_use: model download only — never sent to the LLMBoost API.
+    url: https://llmboost.mangoboost.io/docs/quickstart
+
+  - name: container registry login
+    kind: registry-credential
+    purpose: Pull the LLMBoost server image.
+    obtained: >-
+      Provisioned by MangoBoost — email contact@mangoboost.io with your Docker Hub
+      username to be invited to the LLMBoost image registry, then `docker login`.
+    url: https://llmboost.mangoboost.io/docs/running/lbh
+
+  - name: LLMBoost license
+    kind: license-file
+    default_path: $LBH_HOME/license.skm
+    purpose: Activates the licensed LLMBoost optimizations.
+    detail: >-
+      "LLMBoost activates a license on first start (a free trial is provisioned
+      automatically) and then serves locally. Keep the host online for first activation."
+      Imported/validated with `lbh login`. Enterprise seats and offline licensing are
+      handled through mangoboost.io/contact.
+    url: https://llmboost.mangoboost.io/docs/running/configuration
+
+not_present:
+  - oauth2
+  - openIdConnect
+  - mutualTLS
+  - api-key-issuance
+  - scopes-or-permissions-model
+
+x-evidence:
+  fetched: '2026-08-04'
+  probes:
+    - url: https://llmboost.mangoboost.io/docs/features/openai-api
+      http_status: 200
+    - url: https://llmboost.mangoboost.io/docs/running/configuration
+      http_status: 200
+    - url: https://sdk.mangoboost.io/docs/guide/docs_opi/guide
+      http_status: 200
+    - url: https://www.mangoboost.io/.well-known/openid-configuration
+      http_status: 404

@@ -1,0 +1,51 @@
+generated: '2026-08-04'
+method: probed
+source: https://www.mangoboost.io/.well-known/
+name: MangoBoost /.well-known discovery probes
+description: >-
+  Every /.well-known path in the enrichment pipeline was probed against all three
+  MangoBoost hosts. None returned a 200 — MangoBoost publishes no security.txt, no
+  OpenID/OAuth metadata, no api-catalog, no ai-plugin and no A2A agent card. Recorded
+  here as an honest zero so a later run does not re-probe blind. No WellKnown or
+  SecurityTxt pointer is wired into apis.yml, because there is nothing to point at.
+
+hosts:
+  - www.mangoboost.io
+  - sdk.mangoboost.io
+  - llmboost.mangoboost.io
+
+probes:
+  - path: /.well-known/security.txt
+    status: 404
+    file: null
+  - path: /.well-known/openid-configuration
+    status: 404
+    file: null
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+    file: null
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+    file: null
+  - path: /.well-known/api-catalog
+    status: 404
+    file: null
+  - path: /.well-known/ai-plugin.json
+    status: 404
+    file: null
+  - path: /.well-known/agent-card.json
+    status: 404
+    file: null
+  - path: /.well-known/agent.json
+    status: 404
+    file: null
+
+note: >-
+  Each path above returned 404 on every host listed. robots.txt exists only on
+  www.mangoboost.io (200); sdk. and llmboost. return 404 for it. Sitemaps are published
+  at https://www.mangoboost.io/sitemap.xml, https://sdk.mangoboost.io/sitemap.xml and
+  https://llmboost.mangoboost.io/sitemap.xml (all 200).
+
+x-evidence:
+  fetched: '2026-08-04'
+  method: curl -sS -o /dev/null -w '%{http_code}' -L
