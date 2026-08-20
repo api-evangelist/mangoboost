@@ -23,6 +23,19 @@ modified: '2026-08-04'
 tags:
 - Company
 - Artificial Intelligence
+- Machine-Learning
+- Infrastructure
+- Data-Center
+- Semiconductors
+- Hardware
+- Storage
+- Networking
+- Inference
+- GPU
+- DPU
+tags_raw:
+- Company
+- Artificial Intelligence
 - Machine Learning
 - Infrastructure
 - Data Center
@@ -50,6 +63,12 @@ apis:
   x-deployment: self-hosted
   x-default-port: 8000
   tags:
+  - Inference
+  - Artificial Intelligence
+  - LLM
+  - OpenAI-Compatible
+  - Self-Hosted
+  tags_raw:
   - Inference
   - Artificial Intelligence
   - LLM
