@@ -11,6 +11,19 @@ description: 'MangoBoost, Inc. builds full-stack Data Processing Unit (DPU) hard
   distributed as a container plus the llmboost_hub (lbh) Python CLI, and the DPU is
   programmed through libmango and OPI gRPC on the card.'
 url: https://raw.githubusercontent.com/api-evangelist/mangoboost/refs/heads/main/apis.yml
+deliveryModel:
+  model: open-core
+  license: Apache-2.0
+  open_source: true
+  commercial: true
+  callable_host: false
+  label: Open core · an OSS project plus a commercial hosted product
+  confidence: high
+  source:
+  - license
+  - pricing
+  generated: '2026-08-28'
+  method: derived
 image: https://cdn.sanity.io/images/hx87iaks/production/044e3e87d4c32dc3c01996e772f4b3f7c08b873e-376x61.png
 x-type: company
 x-source: harvest:secondary-market
