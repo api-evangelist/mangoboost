@@ -47,12 +47,16 @@ x-tier-reason: enrichment
 specificationVersion: '0.23'
 created: '2026-08-04'
 modified: '2026-08-04'
+x-docs-platform: docusaurus
+x-docs-platform-confidence: medium
+x-docs-platform-checked: 2026-10-03
+x-docs-hosting: aws-cloudfront
 tags:
 - Company
 - Artificial Intelligence
-- Machine-Learning
+- Machine Learning
 - Infrastructure
-- Data-Center
+- Data Center
 - Semiconductors
 - Hardware
 - Storage
@@ -73,6 +77,8 @@ tags_raw:
 - Inference
 - GPU
 - DPU
+- Machine-Learning
+- Data-Center
 apis:
 - aid: mangoboost:llmboost-inference
   name: Mango LLMBoost Inference Server API
